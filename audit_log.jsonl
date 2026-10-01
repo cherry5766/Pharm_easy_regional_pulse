@@ -1,0 +1,4 @@
+{"timestamp": "2026-10-01T11:33:21+00:00", "run_id": "test-harness", "region": "Guntur", "decision": "approve", "reviewer_note": "[TEST] approve path."}
+{"timestamp": "2026-10-01T11:33:21+00:00", "run_id": "test-harness", "region": "Visakhapatnam", "decision": "edit", "reviewer_note": "[TEST] edit path: reword implication."}
+{"timestamp": "2026-10-01T11:33:21+00:00", "run_id": "test-harness", "region": "Karimnagar", "decision": "reject", "reviewer_note": "[TEST] reject path: implication overstated."}
+{"timestamp": "2026-10-01T12:17:54+00:00", "run_id": "run-2026-06-monthly", "region": "Hyderabad", "decision": "approve", "reviewer_note": ""}

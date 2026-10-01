@@ -1,0 +1,19 @@
+{
+  "raw_rows": 2159,
+  "raw_region_variants": 16,
+  "duplicates_removed": 59,
+  "rows_after_dedup": 2100,
+  "canonical_regions": 9,
+  "missing_category_before": 48,
+  "missing_category_after": 0,
+  "missing_profit_before": 94,
+  "category_mean_margin": {
+    "Lab Tests": 0.148328,
+    "Medical Devices": 0.152795,
+    "OTC Medicines": 0.148938,
+    "Personal Care": 0.147893,
+    "Prescription Medicines": 0.151463,
+    "Wellness & Nutrition": 0.150877
+  },
+  "missing_profit_after": 0
+}

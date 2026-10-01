@@ -1,0 +1,104 @@
+[
+  {
+    "region": "Bengaluru",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05"
+    ],
+    "context": "Bengaluru sales fell from INR 203,505.48 (113 orders) in April to INR 172,929.68 (118 orders) in May.",
+    "insight": "April->May change was -15.02%, beyond the 8% alert threshold.",
+    "implication": "Single-transition flag: treat as a prompt to check order mix and order count before drawing conclusions.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Guntur",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05",
+      "2026-05->2026-06"
+    ],
+    "context": "Guntur sales rose from INR 62,442.27 (51 orders) in April to INR 138,738.93 (77 orders) in May. Guntur sales fell from INR 138,738.93 (77 orders) in May to INR 99,745.18 (62 orders) in June.",
+    "insight": "April->May change was +122.19%, beyond the 8% alert threshold. May->June change was -28.11%, beyond the 8% alert threshold.",
+    "implication": "The two moves point in opposite directions, so the month-end level is a better read than either single swing; review both months together. Swing exceeds 50%, so a regional lead should review the underlying orders this week.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Hyderabad",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05",
+      "2026-05->2026-06"
+    ],
+    "context": "Hyderabad sales rose from INR 209,670.15 (158 orders) in April to INR 243,825.28 (145 orders) in May. Hyderabad sales rose from INR 243,825.28 (145 orders) in May to INR 294,088.56 (216 orders) in June.",
+    "insight": "April->May change was +16.29%, beyond the 8% alert threshold. May->June change was +20.61%, beyond the 8% alert threshold.",
+    "implication": "Both transitions moved the same way, which makes a sustained shift more plausible than a one-month blip.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Karimnagar",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05",
+      "2026-05->2026-06"
+    ],
+    "context": "Karimnagar sales rose from INR 49,815.71 (29 orders) in April to INR 61,585.90 (38 orders) in May. Karimnagar sales fell from INR 61,585.90 (38 orders) in May to INR 34,490.58 (22 orders) in June.",
+    "insight": "April->May change was +23.63%, beyond the 8% alert threshold. May->June change was -44.00%, beyond the 8% alert threshold.",
+    "implication": "The two moves point in opposite directions, so the month-end level is a better read than either single swing; review both months together.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Tirupati",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05",
+      "2026-05->2026-06"
+    ],
+    "context": "Tirupati sales rose from INR 54,582.74 (43 orders) in April to INR 91,083.20 (58 orders) in May. Tirupati sales fell from INR 91,083.20 (58 orders) in May to INR 75,530.99 (50 orders) in June.",
+    "insight": "April->May change was +66.87%, beyond the 8% alert threshold. May->June change was -17.07%, beyond the 8% alert threshold.",
+    "implication": "The two moves point in opposite directions, so the month-end level is a better read than either single swing; review both months together. Swing exceeds 50%, so a regional lead should review the underlying orders this week.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Vijayawada",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-05->2026-06"
+    ],
+    "context": "Vijayawada sales fell from INR 174,863.57 (92 orders) in May to INR 153,849.68 (95 orders) in June.",
+    "insight": "May->June change was -12.02%, beyond the 8% alert threshold.",
+    "implication": "Single-transition flag: treat as a prompt to check order mix and order count before drawing conclusions.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Visakhapatnam",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05",
+      "2026-05->2026-06"
+    ],
+    "context": "Visakhapatnam sales fell from INR 134,765.29 (91 orders) in April to INR 50,590.08 (33 orders) in May. Visakhapatnam sales rose from INR 50,590.08 (33 orders) in May to INR 100,735.57 (52 orders) in June.",
+    "insight": "April->May change was -62.46%, beyond the 8% alert threshold. May->June change was +99.12%, beyond the 8% alert threshold.",
+    "implication": "The two moves point in opposite directions, so the month-end level is a better read than either single swing; review both months together. Swing exceeds 50%, so a regional lead should review the underlying orders this week.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  },
+  {
+    "region": "Warangal",
+    "run_id": "run-2026-06-monthly",
+    "transitions_flagged": [
+      "2026-04->2026-05",
+      "2026-05->2026-06"
+    ],
+    "context": "Warangal sales fell from INR 100,468.14 (64 orders) in April to INR 78,339.23 (75 orders) in May. Warangal sales fell from INR 78,339.23 (75 orders) in May to INR 66,715.24 (56 orders) in June.",
+    "insight": "April->May change was -22.03%, beyond the 8% alert threshold. May->June change was -14.84%, beyond the 8% alert threshold.",
+    "implication": "Both transitions moved the same way, which makes a sustained shift more plausible than a one-month blip.",
+    "status": "draft",
+    "downstream_use_allowed": false
+  }
+]
