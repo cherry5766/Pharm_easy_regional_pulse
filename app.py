@@ -9,7 +9,6 @@ import streamlit as st
 
 from draft_report import build_drafts
 from metrics_engine import TRANSITIONS, compute_percentage_change_v1, flag_significant_regions_v1
-from draft_report import RUN_ID
 from review_gate import load_latest_decisions, review_gate_v1
 
 st.set_page_config(page_title="PharmEasy Regional Pulse", layout="wide")
@@ -35,7 +34,19 @@ def load():
 orders, master = load()
 drafts, metrics, flagged = build_drafts()
 changes = metrics["changes"]
-decisions = load_latest_decisions(RUN_ID)
+run_id = drafts[0]["run_id"]
+decisions = load_latest_decisions(run_id)
+mode = st.sidebar.radio("View", ["Reviewer workspace", "Approved stakeholder dashboard"])
+st.sidebar.caption("Reviews apply to the current data, narrative and memo version.")
+reviewer_name = st.sidebar.text_input("Reviewer name", key="reviewer_name")
+unapproved = [d["region"] for d in drafts if decisions.get(d["region"], {}).get("decision") != "approve"]
+if mode == "Approved stakeholder dashboard" and unapproved:
+    st.title("PharmEasy Regional Pulse")
+    st.warning("Stakeholder dashboard is locked until all flagged-region reports and the Guntur memo have been approved for this version.")
+    st.write("Awaiting approval: " + ", ".join(unapproved))
+    st.stop()
+if mode == "Reviewer workspace":
+    st.warning("Reviewer workspace: the numbers and narratives below are drafts for human validation. They are not cleared for stakeholder use.")
 
 # ------------------------------------------------------------------ executive summary
 total_sales, total_profit = orders.sales_inr.sum(), orders.profit_inr.sum()
@@ -81,7 +92,7 @@ reg_month = orders.groupby(["region", "month"]).sales_inr.sum().reset_index()
 fig_line = go.Figure()
 for r in sorted(reg_month.region.unique()):
     d = reg_month[reg_month.region == r].sort_values("month")
-    hit = r == sel
+    hit = r == sel and any(r in regions for regions in flagged.values())
     fig_line.add_trace(go.Scatter(
         x=[MONTH_LABEL[m] for m in d.month], y=d.sales_inr, mode="lines+markers", name=r,
         line=dict(color=HIGHLIGHT if hit else BASE, width=4 if hit else 1.5),
@@ -95,7 +106,7 @@ st.plotly_chart(fig_line, width="stretch")
 # bar chart: total sales by region
 tot = orders.groupby("region").sales_inr.sum().reindex(master.region).fillna(0).sort_values(ascending=False)
 fig_bar = go.Figure(go.Bar(x=tot.index, y=tot.values,
-                           marker_color=[HIGHLIGHT if r == sel else BASE for r in tot.index]))
+                           marker_color=[HIGHLIGHT if r == sel and any(r in regions for regions in flagged.values()) else BASE for r in tot.index]))
 fig_bar.update_layout(title="Which regions generate the most sales (Apr-Jun 2026)?",
                       xaxis_title="Region", yaxis_title="Total sales (INR)", height=400, margin=dict(t=60))
 fig_bar.update_yaxes(rangemode="tozero", tickformat=",")
@@ -159,10 +170,18 @@ for d in drafts:
         st.markdown(f"**Context.** {d['context']}")
         st.markdown(f"**Insight.** {d['insight']}")
         st.markdown(f"**Implication.** {d['implication']}")
+        if reg == "Guntur":
+            from pathlib import Path
+            st.markdown("**Recommendation memo (included in this approval)**")
+            st.markdown(Path("memo.md").read_text())
+        if mode == "Approved stakeholder dashboard":
+            st.caption("Approved for this data, narrative and memo version.")
+            continue
         st.divider()
         st.markdown("**Human review gate** — this block is not shown as reviewed until you decide:")
         note = st.text_area("Reviewer note (optional but recommended)", key=f"note_{reg}", height=90,
                             placeholder="e.g. Numbers checked against Part 2 SQL output; ready for the regional lead.")
+        memo_reviewed = st.checkbox("I reviewed the Guntur recommendation memo above.", key="memo_reviewed") if reg == "Guntur" else True
         b1, b2, b3 = st.columns(3)
         clicked = None
         if b1.button("Approve", key=f"approve_{reg}", icon="✅"):
@@ -172,9 +191,14 @@ for d in drafts:
         if b3.button("Reject", key=f"reject_{reg}", icon="🚫"):
             clicked = "reject"
         if clicked:
-            review_gate_v1(d, clicked, note.strip())
-            st.session_state[f"flash_{reg}"] = f"Recorded: {clicked} for {reg}."
-            st.rerun()
+            if clicked == "approve" and not memo_reviewed:
+                st.error("Review the Guntur memo and check its acknowledgement before approving.")
+            elif not reviewer_name.strip() or not note.strip():
+                st.error("Enter your reviewer name in the sidebar and a review note before recording a decision.")
+            else:
+                review_gate_v1(d, clicked, f"Reviewer: {reviewer_name.strip()} | {note.strip()}" + (" | Guntur memo reviewed" if reg == "Guntur" and memo_reviewed else ""))
+                st.session_state[f"flash_{reg}"] = f"Recorded: {clicked} for {reg}."
+                st.rerun()
         if st.session_state.get(f"flash_{reg}"):
             st.success(st.session_state.pop(f"flash_{reg}"))
         if dec:

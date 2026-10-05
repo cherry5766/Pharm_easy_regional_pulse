@@ -1,10 +1,12 @@
 """Part 3 - Context-Insight-Implication draft generator. Every number comes from computed metrics."""
+import hashlib
 import json
+from pathlib import Path
 from metrics_engine import (region_month_sales, region_month_orders, all_changes,
                             flag_significant_regions_v1, TRANSITIONS)
 
 MONTH_NAME = {"2026-04": "April", "2026-05": "May", "2026-06": "June"}
-RUN_ID = "run-2026-06-monthly"
+RUN_ID = "pending-content-fingerprint"
 
 
 def _inr(x):
@@ -58,7 +60,14 @@ def load_metrics():
 def build_drafts():
     m = load_metrics()
     flagged = {t: flag_significant_regions_v1(c) for t, c in m["changes"].items()}
-    return draft_report_v1(flagged, m), m, flagged
+    blocks = draft_report_v1(flagged, m)
+    # A decision applies only to this exact data, narrative and memo snapshot.
+    memo = Path("memo.md").read_text() if Path("memo.md").exists() else ""
+    snapshot = {"metrics": m, "drafts": blocks, "memo": memo}
+    run_id = "report-" + hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest()[:20]
+    for block in blocks:
+        block["run_id"] = run_id
+    return blocks, m, flagged
 
 
 if __name__ == "__main__":

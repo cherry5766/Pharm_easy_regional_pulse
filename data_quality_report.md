@@ -24,3 +24,6 @@ Source: `pharmeasy_orders_raw.csv` (2,159 rows) → `orders_clean.csv` (2,100 ro
 
 ## Schema validation demonstration
 `clean_data.py` prints `validated` for the clean data and `blocked_schema` with `missing_columns: ['profit_inr']` for a copy with that column dropped.
+
+## Incremental month processing
+`python3 metrics_engine.py --month 2026-04 --state incremental_state.json` saves a baseline. After loading a new month into SQLite, `python3 metrics_engine.py --month 2026-05 --state incremental_state.json` queries only May and compares it with saved April; the database can contain May only. A missing previous month is explicitly reported as `baseline_saved`, without inventing a comparison. Both input schemas are checked before database replacement, and required order columns are checked before cleaning writes.

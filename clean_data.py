@@ -22,6 +22,9 @@ def validate_schema(df, required_columns):
 def clean(raw_path=RAW_PATH, master_path="regions_master.csv"):
     log = {}
     df = pd.read_csv(raw_path, dtype={"order_id": str})
+    schema = validate_schema(df, REQUIRED)
+    if schema["status"] != "validated":
+        raise ValueError(f"blocked_schema: {schema['missing_columns']}")
     log["raw_rows"] = len(df)
     log["raw_region_variants"] = int(df["region"].nunique())
 
@@ -60,6 +63,9 @@ def clean(raw_path=RAW_PATH, master_path="regions_master.csv"):
 
 if __name__ == "__main__":
     df, log = clean()
+    schema = validate_schema(df, REQUIRED)
+    if schema["status"] != "validated":
+        raise ValueError(f"blocked_schema: {schema['missing_columns']}")
     df.to_csv(CLEAN_PATH, index=False)
     with open(LOG_PATH, "w") as f:
         json.dump(log, f, indent=2)

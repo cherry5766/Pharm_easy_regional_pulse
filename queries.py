@@ -61,3 +61,82 @@ save_state_v1({"2026-04": s["2026-04"]}, "state_april.json")
 assert load_previous_state_v1("state_april.json") == {"2026-04": s["2026-04"]}
 save_state_v1(s, "state.json")
 print("\nState round-trip OK (state_april.json, state.json written)")
+
+# SQL evidence for memo.md and presentation_storyline.md; all derived from clean orders.
+show("Guntur monthly sales, distinct orders, average order value and company share", """
+WITH company AS (
+ SELECT substr(order_date,1,7) month, SUM(sales_inr) company_sales
+ FROM orders_clean GROUP BY 1
+), regional AS (
+ SELECT substr(order_date,1,7) month, SUM(sales_inr) sales,
+ COUNT(DISTINCT order_id) orders FROM orders_clean WHERE region='Guntur' GROUP BY 1
+)
+SELECT r.month, ROUND(r.sales,2) sales_inr, r.orders,
+ ROUND(r.sales/r.orders,2) average_order_value_inr,
+ ROUND(100.0*r.sales/c.company_sales,2) company_sales_share_pct
+FROM regional r JOIN company c USING(month) ORDER BY r.month
+""")
+show("Guntur April-May order count and average order value growth", """
+WITH m AS (
+ SELECT substr(order_date,1,7) month, SUM(sales_inr) sales,
+ COUNT(DISTINCT order_id) orders FROM orders_clean WHERE region='Guntur' GROUP BY 1
+)
+SELECT ROUND(100.0*(b.orders-a.orders)/a.orders,2) order_growth_pct,
+ ROUND(100.0*((b.sales/b.orders)-(a.sales/a.orders))/(a.sales/a.orders),2) aov_growth_pct
+FROM m a JOIN m b ON a.month='2026-04' AND b.month='2026-05'
+""")
+show("Guntur category sales, distinct orders and contribution to April-May increase", """
+WITH c AS (
+ SELECT category,
+ SUM(CASE WHEN substr(order_date,1,7)='2026-04' THEN sales_inr ELSE 0 END) april_sales,
+ SUM(CASE WHEN substr(order_date,1,7)='2026-05' THEN sales_inr ELSE 0 END) may_sales,
+ COUNT(DISTINCT CASE WHEN substr(order_date,1,7)='2026-04' THEN order_id END) april_orders,
+ COUNT(DISTINCT CASE WHEN substr(order_date,1,7)='2026-05' THEN order_id END) may_orders
+ FROM orders_clean WHERE region='Guntur' GROUP BY category
+)
+SELECT category, ROUND(april_sales,2) april_sales, ROUND(may_sales,2) may_sales,
+ april_orders, may_orders, ROUND(may_sales-april_sales,2) increase_inr,
+ ROUND(100.0*(may_sales-april_sales)/(SELECT SUM(may_sales-april_sales) FROM c),2) increase_share_pct
+FROM c ORDER BY increase_inr DESC
+""")
+show("Three highlighted Guntur categories combined", """
+WITH c AS (
+ SELECT substr(order_date,1,7) month,
+ SUM(sales_inr) total_sales,
+ SUM(CASE WHEN category IN ('Wellness & Nutrition','Medical Devices','Lab Tests') THEN sales_inr ELSE 0 END) highlighted_sales,
+ COUNT(DISTINCT CASE WHEN category IN ('Wellness & Nutrition','Medical Devices','Lab Tests') THEN order_id END) highlighted_orders
+ FROM orders_clean WHERE region='Guntur' GROUP BY 1
+)
+SELECT a.highlighted_orders april_orders, b.highlighted_orders may_orders,
+ ROUND(100.0*(b.highlighted_sales-a.highlighted_sales)/(b.total_sales-a.total_sales),2) combined_increase_share_pct
+FROM c a JOIN c b ON a.month='2026-04' AND b.month='2026-05'
+""")
+show("Guntur top-five order sales concentration", """
+WITH ranked AS (
+ SELECT substr(order_date,1,7) month, sales_inr,
+ ROW_NUMBER() OVER(PARTITION BY substr(order_date,1,7) ORDER BY sales_inr DESC,order_id) position
+ FROM orders_clean WHERE region='Guntur'
+)
+SELECT month, ROUND(SUM(CASE WHEN position<=5 THEN sales_inr ELSE 0 END),2) top5_sales_inr,
+ ROUND(100.0*SUM(CASE WHEN position<=5 THEN sales_inr ELSE 0 END)/SUM(sales_inr),2) top5_share_pct
+FROM ranked GROUP BY month ORDER BY month
+""")
+show("Company sales including and excluding Guntur, with growth", """
+WITH m AS (
+ SELECT substr(order_date,1,7) month, SUM(sales_inr) sales,
+ SUM(CASE WHEN region<>'Guntur' THEN sales_inr ELSE 0 END) excluding_guntur
+ FROM orders_clean GROUP BY 1
+)
+SELECT month, ROUND(sales,2) company_sales_inr, ROUND(excluding_guntur,2) excluding_guntur_inr,
+ ROUND(100.0*(sales-LAG(sales) OVER(ORDER BY month))/LAG(sales) OVER(ORDER BY month),2) company_mom_pct,
+ ROUND(100.0*(excluding_guntur-LAG(excluding_guntur) OVER(ORDER BY month))/LAG(excluding_guntur) OVER(ORDER BY month),2) excluding_guntur_mom_pct
+FROM m ORDER BY month
+""")
+show("Guntur June versus April", """
+SELECT ROUND(100.0*(
+ SUM(CASE WHEN substr(order_date,1,7)='2026-06' THEN sales_inr ELSE 0 END)-
+ SUM(CASE WHEN substr(order_date,1,7)='2026-04' THEN sales_inr ELSE 0 END))/
+ SUM(CASE WHEN substr(order_date,1,7)='2026-04' THEN sales_inr ELSE 0 END),2) june_vs_april_pct
+FROM orders_clean WHERE region='Guntur'
+""")
+con.close()

@@ -72,9 +72,41 @@ def all_changes(sales):
     return {f"{a}->{b}": mom_changes(sales[a], sales[b]) for a, b in TRANSITIONS}
 
 
+def process_month(month, db_path=DB_PATH, state_path=STATE_PATH):
+    """Query only the requested month, compare saved prior month, then persist it."""
+    from datetime import datetime, timedelta
+    parsed = datetime.strptime(month, "%Y-%m")
+    previous_month = (parsed.replace(day=1) - timedelta(days=1)).strftime("%Y-%m")
+    try:
+        state = load_previous_state_v1(state_path)
+    except FileNotFoundError:
+        state = {}
+    with sqlite3.connect(db_path) as con:
+        rows = con.execute(
+            "SELECT region, ROUND(SUM(sales_inr),2) FROM orders_clean "
+            "WHERE substr(order_date,1,7)=? GROUP BY region ORDER BY region", (month,)).fetchall()
+    if not rows:
+        raise ValueError(f"No orders found for {month}; state was not changed")
+    current = dict(rows)
+    changes = mom_changes(state[previous_month], current) if previous_month in state else None
+    save_state_v1({month: current}, state_path)
+    return {"month": month, "previous_month": previous_month, "sales": current,
+            "changes": changes, "flagged": flag_significant_regions_v1(changes) if changes is not None else [],
+            "comparison_status": "compared" if changes is not None else "baseline_saved"}
+
+
 if __name__ == "__main__":
-    sales = region_month_sales()
-    ch = all_changes(sales)
-    for k, v in ch.items():
-        print(k, v)
-        print("  flagged:", flag_significant_regions_v1(v))
+    import argparse
+    parser = argparse.ArgumentParser(description="Compute SQL-verified regional metrics.")
+    parser.add_argument("--month", help="YYYY-MM: query only this month and compare saved prior state")
+    parser.add_argument("--db", "--db-path", dest="db", default=DB_PATH)
+    parser.add_argument("--state", "--state-path", dest="state", default=STATE_PATH)
+    args = parser.parse_args()
+    if args.month:
+        print(json.dumps(process_month(args.month, args.db, args.state), indent=2))
+    else:
+        sales = region_month_sales(args.db)
+        ch = all_changes(sales)
+        for k, v in ch.items():
+            print(k, v)
+            print("  flagged:", flag_significant_regions_v1(v))
