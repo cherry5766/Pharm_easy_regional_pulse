@@ -3,7 +3,7 @@
 Risk tags: **[LOW]** structural/logical claim · **[MEDIUM]** reasoned inference specific to this context · **[HIGH]** specific number that must trace to the Part 2 SQL output (`queries.py`, `metrics_engine.py`).
 
 ## Title
-Guntur's April→May sales jump of +122.19%: what the order data supports, and what it does not. [LOW]
+Guntur's April→May sales jump of +122.19%: what the order data supports, and what it does not. [HIGH]
 
 ## Context
 - Guntur is one of 9 active regions with orders in the April–June 2026 export, and its April→May change is the largest-magnitude flagged swing in the dataset (+122.19%, versus +99.12% for Visakhapatnam May→June and +66.87% for Tirupati April→May). [HIGH]
@@ -27,7 +27,7 @@ Guntur's May increase came from both more orders and larger orders, concentrated
 
 ## Recommendation
 - Treat the May jump as a real but unexplained increase: do not reset Guntur targets, inventory or staffing on May alone. [MEDIUM]
-- Ask the Guntur regional lead to review the 77 May orders in Wellness & Nutrition, Medical Devices and Lab Tests and record any known cause (campaign, stock availability, partner onboarding). [MEDIUM]
+- Ask the Guntur regional lead to review all May orders, focusing on Wellness & Nutrition, Medical Devices and Lab Tests, and record any known cause; any suggested cause remains unverified. [MEDIUM]
 - Use the July export as the confirming test before any structural decision. [MEDIUM]
 
 ## Next Check
